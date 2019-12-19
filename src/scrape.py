@@ -70,6 +70,8 @@ def count_words(filepath ='extracted/lists/australian_user_reviews.txt',
 #       * faire un dictionnaire de vocabulaire avec texte des tp precedents. Les mots ALL CAPS trouvés devront être
 #         vérifiés s'ils sont des vrais mots (e.g. AAAAAH -> ah, WWWWHHHHYYYYYYY -> why, FFIV -> ffiv is not a word,
 #         thus a game accronym)
+
+
 def look_for_words(filepath ='extracted/lists/australian_user_reviews.txt',
                    write_to="extracted/lists/game_names.txt",
                    write_rejected="extracted/lists/game_names_rejected_for_length.txt",
@@ -261,7 +263,6 @@ def get_review(line, cnt):
     return revs, polars, positivs, subjs, funs, helps, recoms
 
 
-
 def build_dataframe(json_fname="australian_user_reviews", csv_fname="steam_australia", get_more_infos=False):
     """
     Builds the dataframe to do cool data science with
@@ -445,7 +446,7 @@ def normalize_csv(df_name="steam_australia.csv", norm_fname="steam_australia_nor
                 pbar.update(1)
     with tqdm(total=len(df["review"])) as pbar:
         for l, line in enumerate(df["review"]):
-            line = str(line).lower()
+            # line = str(line).lower()
             for i, (name, abbr) in enumerate((zip(names["names"], names["abbr"]))):
                 if name.lower() in line:
                     # Replace the name, lowercase or not, not Capitalized
@@ -529,7 +530,6 @@ def normalize_csv_for_word2vec(df_name="steam_australia_norm.csv", w2v_norm_fnam
             pbar.update(1)
     w.close()
     df.to_csv("extracted/dataframes/{}.csv".format(w2v_norm_fname), index=False)
-
 
 
 if __name__ == "__main__":
