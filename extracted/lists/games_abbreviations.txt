@@ -1,0 +1,42 @@
+Nether,N
+Portal,P
+Awesomenaughts,A
+Free And Funcodename Cure,FAFC
+Herpes And Genitals,HAG
+Boderlands 2,B2
+Half Life 2,HL2
+Metro 2033,M2033
+Tf2,T2
+Csgo,C
+Besiege,B
+Team Fortress 2,TF2
+In Summary Garrys Mod,ISGM
+Castle Miner Z,CMZ
+The Darkness 2,TD2
+Terraria,T
+The Culling,TC
+Men Of War,MOW
+Cs:go,C:
+Css,C
+Nuclear Throne,NT
+The Elder Scrolls V: Skyrim,TESV:S
+Zombie Army Trilogy,ZAT
+Dota 2,D2
+Murdered: Soul Suspect,M:SS
+Garrys Mod,GM
+Red Faction Guerrilla,RFG
+Undertale,U
+Gameplaythehunter: Primal,G:P
+Well There,WT
+Crusader Kings 2 Or Ck2,CK2OC2
+Super Meat Boy,SMB
+Starbound,S
+Dont Starve,DS
+The Community,TC
+Sonic Generations,SG
+Insurgency Really,IR
+Airmech,A
+The Stomping Land,TSL
+Counter Strike Global Offensive,CSGO
+Zombie Army Trlogy,ZAT
+Evolve,E

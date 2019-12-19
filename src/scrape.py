@@ -441,16 +441,24 @@ def normalize_csv(df_name="steam_australia.csv", norm_fname="steam_australia_nor
                 # to impove the number of hits in that next step. Stop words are part of expressions of named
                 # entities, e.g. The_Hague is a city
                 line = str(line).lower().translate(str.maketrans('', '', string.punctuation))
-                line = preprocessing(line, stop_words, ss, words_dict, remove_stopwords=False)
+                line = preprocessing(line, stop_words, ss, words_dict, remove_stopwords=False, correct=False)
                 df.set_value(l, "review", line)
                 pbar.update(1)
     with tqdm(total=len(df["review"])) as pbar:
         for l, line in enumerate(df["review"]):
-            # line = str(line).lower()
+            line = str(line) #.lower()
             for i, (name, abbr) in enumerate((zip(names["names"], names["abbr"]))):
-                if name.lower() in line:
+                if " " + name.lower() + " " in line:
                     # Replace the name, lowercase or not, not Capitalized
-                    line = line.replace(name.lower(), name.replace(" ", "_"))
+                    line = line.replace(" " + name.lower() + " ", " " + name.replace(" ", "_") + " ")
+                    w.write(name.replace(" ", "_") + ',"' + line + '"\n')
+                if " " + name.lower() in line:
+                    # Replace the name, lowercase or not, not Capitalized
+                    line = line.replace(" " + name.lower(), " " + name.replace(" ", "_"))
+                    w.write(name.replace(" ", "_") + ',"' + line + '"\n')
+                if name.lower() + " " in line:
+                    # Replace the name, lowercase or not, not Capitalized
+                    line = line.replace(name.lower() + " ", name.replace(" ", "_") + " ")
                     w.write(name.replace(" ", "_") + ',"' + line + '"\n')
                 # if abbr.lower() in line and len(abbr) > 1:
                 # Replace the abbreviations, lowercase or not with Capitalized full name

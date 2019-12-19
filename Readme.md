@@ -4,7 +4,8 @@ First, run
 
 bash get_pretrained_word2vec.sh
 
-To get the pretrained GoogleNews-vectors-negative300.bin.gz for word2vec
+To get the pretrained GoogleNews-vectors-negative300.bin.gz for word2vec, then extract it in the same folder 
+(you can delete the .gz file after)
 
 Then, scrape the game reviews with
 
