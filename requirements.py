@@ -4,3 +4,6 @@ numpy
 gensim
 tqdm
 spacy
+seaborn
+mysqlclient
+pattern
