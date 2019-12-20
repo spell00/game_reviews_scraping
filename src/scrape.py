@@ -5,13 +5,14 @@ from tqdm import tqdm
 from pattern.text.en import polarity, positive, subjectivity
 from gensim.parsing.preprocessing import remove_stopwords
 import string
-from src.preprocess import preprocessing, SymSpell
+from src.preprocess import preprocessing, SymSpell, remove_blanc
 from nltk.corpus import stopwords
 import spacy
 from gensim.models import KeyedVectors
 import matplotlib.pyplot as plt
 from pattern.text.en import parse
-
+import multiprocessing
+import pathos.pools as pp
 spacy_nlp = spacy.load('en_core_web_lg')
 spacy_stopwords = spacy.lang.en.stop_words.STOP_WORDS
 stop_words = set(list(set(stopwords.words('english'))) + list(spacy_stopwords))
@@ -29,8 +30,9 @@ def get_word2vec_vocab():
     w = open("extracted/lists/GoogleNews-vectors-negative300", "w+")
     with tqdm(total=len(vocab)) as pbar:
         for v in vocab:
-            if parse(v + "\n").split("/")[1] == "NNP" and " ".join(v.lower().split("_")).title() == " ".join(v.split("_")):
-                w.write(v + "\n")
+            if len(parse(v + "\n")) > 0:
+                if parse(v + "\n").split("/")[1] == "NNP" and " ".join(v.lower().split("_")).title() == " ".join(v.split("_")):
+                    w.write(v + "\n")
             pbar.update(1)
     w.close()
 
@@ -423,6 +425,7 @@ def normalize_csv(df_name="steam_australia.csv", norm_fname="steam_australia_nor
     w = open("extracted/lists/normalized_names.csv", "w+")
     words_dict = None
     ss = None
+    t = str.maketrans(dict.fromkeys(string.punctuation, " "))
     if spell_check:
         print("Normalizing text...")
         if correct:
@@ -440,7 +443,7 @@ def normalize_csv(df_name="steam_australia.csv", norm_fname="steam_australia_nor
                 # We need them for normalize_csv_for_word2vec, which is done after normalization
                 # to impove the number of hits in that next step. Stop words are part of expressions of named
                 # entities, e.g. The_Hague is a city
-                line = str(line).lower().translate(str.maketrans('', '', string.punctuation))
+                line = str(line).lower().translate(t)
                 line = preprocessing(line, stop_words, ss, words_dict, remove_stopwords=False, correct=False)
                 df.set_value(l, "review", line)
                 pbar.update(1)
@@ -490,7 +493,7 @@ def remove_stop_words_from_list(list_vocab):
     return cleared_list, stopwords_removed
 
 
-def normalize_csv_for_word2vec(df_name="steam_australia_norm.csv", w2v_norm_fname="steam_australia_norm_w2v"):
+def normalize_csv_for_word2vec(df_name="steam_australia_norm.csv", w2v_norm_fname="steam_australia_norm_w2v", multiple_cores=True):
     """
     word2vec has a lot of vocabulary that cannot be detected in the sentences we will use to fine-tune word2vec
 
@@ -540,12 +543,74 @@ def normalize_csv_for_word2vec(df_name="steam_australia_norm.csv", w2v_norm_fnam
     df.to_csv("extracted/dataframes/{}.csv".format(w2v_norm_fname), index=False)
 
 
+def normalize_csv_for_word2vec_parallel(df_name="steam_australia_norm.csv", w2v_norm_fname="steam_australia_norm_w2v"):
+    """
+    word2vec has a lot of vocabulary that cannot be detected in the sentences we will use to fine-tune word2vec
+
+    :param df_name:
+    :param w2v_norm_fname:
+    :return:
+    """
+    print("Normalizing name entities in accordance to the word2vec vocabulary")
+    vocab = "extracted/lists/GoogleNews-vectors-negative300"
+    df = pd.read_csv("extracted/dataframes/" + df_name)
+    voc = np.array(pd.read_table(vocab))
+    voc, stopwords = remove_stop_words_from_list(voc)
+    w1 = open("extracted/lists/normalized_reviews_w2v.txt", "w+")
+    print("Using", multiprocessing.cpu_count()-1, "cores")
+    pool = pp.ProcessPool(multiprocessing.cpu_count()-1)
+    with tqdm(total=int(len(df["review"]) / (multiprocessing.cpu_count()-1))) as pbar:
+        def parallel_words_normalization(line):
+            pbar.update(1)
+            line = str(line)
+            # w1.write(line + "\n")
+            for word in voc:
+                word = str(word.strip("\n"))
+                if (  # and len(word.split("_")) > 1
+                        "_".join([w.lower().capitalize() for w in word.split("_")]) == word or "_".join(
+                    [w.lower() for w in word.split("_")]) == word):
+                    if word != word.lower():
+                        if len(word) > 1 and "" not in word.split("_"):
+                            # The spaces ensure it is tow complete words, not the end of one and begining of the other
+                            expr = " ".join(word.lower().split("_"))
+                            if " " + expr + " " in line:
+                                # Replace the name, lowercase or not, not Capitalized
+                                line = line.replace(" " + expr + " ", " " + word + " ")
+                                # w.write(word + '\n')
+                                # df.set_value(l, "review", line)
+                            # start of sentence
+                            if expr + " " in line and line.split(expr)[0] == "":
+                                # Replace the name, lowercase or not, not Capitalized
+                                line = line.replace(expr + " ", word + " ")
+                                #w.write(word + '\n')
+                                # df.set_value(l, "review", line)
+                            # end of sentence
+                            if " " + expr in line and line.split(expr)[-1] == "":
+                                # Replace the name, lowercase or not, not Capitalized
+                                line = line.replace(" " + expr, " " + word)
+                                #w.write(word + '\n')
+            w1.write(line + "\n")
+            return line
+        print("Normalisation for pretrained word2vec started. This will take a while...")
+        #with tqdm(total=len(df["review"])) as pbar:
+            #for l, line in enumerate(df["review"]):
+                # line = str(line)
+        lines = pool.map(parallel_words_normalization, df["review"])
+    df["review"] = np.array(lines)
+    #df.set_value(l, "review", line)
+    #w.write(line + '\n')
+    #pbar.update(1)
+    w1.close()
+    df.to_csv("extracted/dataframes/{}.csv".format(w2v_norm_fname), index=False)
+
+
 if __name__ == "__main__":
     #look_for_words()
     #unique_words()
     #words_abbreviation()
     #count_words()
     #build_dataframe(get_more_infos=True)
-    #normalize_csv(spell_check=True, correct=False)
-    get_word2vec_vocab()
-    normalize_csv_for_word2vec()
+    normalize_csv(spell_check=True, correct=False)
+    #get_word2vec_vocab()
+    # # normalize_csv_for_word2vec()
+    normalize_csv_for_word2vec_parallel()
