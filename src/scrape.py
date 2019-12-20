@@ -29,7 +29,7 @@ def get_word2vec_vocab():
     w = open("extracted/lists/GoogleNews-vectors-negative300", "w+")
     with tqdm(total=len(vocab)) as pbar:
         for v in vocab:
-            if parse(v + "\n").split("/")[1] == "NNP" and " ".join(v.lower().split("_").capitalize()) == " ".join(v.split("_")):
+            if parse(v + "\n").split("/")[1] == "NNP" and " ".join(v.lower().split("_")).title() == " ".join(v.split("_")):
                 w.write(v + "\n")
             pbar.update(1)
     w.close()
@@ -541,11 +541,11 @@ def normalize_csv_for_word2vec(df_name="steam_australia_norm.csv", w2v_norm_fnam
 
 
 if __name__ == "__main__":
-    look_for_words()
-    unique_words()
-    words_abbreviation()
-    count_words()
-    build_dataframe(get_more_infos=True)
-    normalize_csv(spell_check=True, correct=False)
+    #look_for_words()
+    #unique_words()
+    #words_abbreviation()
+    #count_words()
+    #build_dataframe(get_more_infos=True)
+    #normalize_csv(spell_check=True, correct=False)
     get_word2vec_vocab()
     normalize_csv_for_word2vec()
