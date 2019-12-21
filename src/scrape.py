@@ -596,7 +596,7 @@ def normalize_csv_for_word2vec_parallel(df_name="steam_australia_norm.csv", w2v_
             #for l, line in enumerate(df["review"]):
                 # line = str(line)
         lines = pool.map(parallel_words_normalization, df["review"])
-    df["review"] = np.array(lines)
+    df["review"] = lines
     #df.set_value(l, "review", line)
     #w.write(line + '\n')
     #pbar.update(1)
@@ -605,7 +605,23 @@ def normalize_csv_for_word2vec_parallel(df_name="steam_australia_norm.csv", w2v_
 
 
 if __name__ == "__main__":
-    #look_for_words()
+    look_for_words(filepath ='extracted/lists/australian_user_reviews.txt',
+                   write_to="extracted/lists/game_names.txt",
+                   write_rejected="extracted/lists/game_names_rejected_for_length.txt",
+                   what_is_it=" is a ",
+                   what_it_is="game",
+                   cutoff=5,
+                   this_list=['Now', 'Game', 'game', 'the game', 'Now', 'now', "There", "there", "This", "this",
+                                      "this game", "", "it", "It"])
+    look_for_words(filepath='extracted/lists/australian_user_reviews.txt',
+                   write_to="extracted/lists/features_names.txt",
+                   write_rejected="extracted/lists/features_names_rejected_for_length.txt",
+                   what_is_it=" is a ",
+                   what_it_is="feature",
+                   cutoff=3,
+                   this_list=['Now', 'Game', 'game', 'the game', 'Now', 'now', "There", "there", "This", "this",
+                                      "this game", "", "it", "It"])
+
     #unique_words()
     #words_abbreviation()
     #count_words()

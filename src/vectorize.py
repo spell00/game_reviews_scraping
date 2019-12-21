@@ -127,7 +127,7 @@ class EmbeddingsModel:
 
         self.model = None
 
-    def train(self, absolute_path, checkpoint=None, n_epochs=100, size=400, min_count=1, sg=1, hs=0,
+    def train(self, absolute_path, checkpoint=None, n_epochs=100, size=400, min_count=1, sg=1, hs=0, fine_tune=True,
               base_dir="saved_models"):
 
         self.sentences = Corpus(absolute_path)
@@ -135,18 +135,21 @@ class EmbeddingsModel:
         if checkpoint is not None:
             print("Uning weights for pre-trained model:", checkpoint)
             self.model = Word2Vec(size=300, min_count=5)
-            self.model.build_vocab(self.sentences)
-            # self.model.build_vocab(self.sentences.train_corpus)
-            total_examples = self.model.corpus_count
+            if fine_tune:
+                print("Building new vocabulary")
+                self.model.build_vocab(self.sentences)
+                total_examples = self.model.corpus_count
+            print("Building checkpoint vocabulary")
             model = KeyedVectors.load_word2vec_format("data/GoogleNews-vectors-negative300.bin", binary=True)
             self.model.build_vocab([list(model.vocab.keys())], update=True)
-            self.model.intersect_word2vec_format("data/GoogleNews-vectors-negative300.bin", binary=True, lockf=1.0)
-            print("Fine-tuning for", )
-            self.model.train(self.sentences,
-                             total_examples=total_examples,
-                             epochs=n_epochs,
-                             compute_loss=True)
-            print("Fine-tuning is over.")
+            if fine_tune:
+                self.model.intersect_word2vec_format("data/GoogleNews-vectors-negative300.bin", binary=True, lockf=1.0)
+                print("Fine-tuning for", )
+                self.model.train(self.sentences,
+                                 total_examples=total_examples,
+                                 epochs=n_epochs,
+                                 compute_loss=True)
+                print("Fine-tuning is over.")
         else:
             print("No checkpoint. Training one of size" + str() + " for", n_epochs, "epochs")
             self.model = gensim.models.Word2Vec(
