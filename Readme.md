@@ -30,4 +30,4 @@ Linear Discriminant Analysis)  we experiences memory errors when running large m
 for the LDA for the VectorCounts, which can be limiting, or to train an embedding model using pretrained word2vec to
 fine-tune it on a new text corpus.
 
-At the moments, these models only run on Mac OS X  
+This project was made for the class IFT-6285 (Natural Language Processing) at Universite de Montreal, so the report (rapport.pdf) is in french.
